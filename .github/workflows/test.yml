@@ -75,4 +75,56 @@ jobs:
           npm run prepare-db:check
           npm run remote:prepare-db:check
           cargo test --workspace
-          cargo clippy --all --all-targets -- -D warnings  
+          cargo clippy --all --all-targets -- -D warnings
+
+  claude-security-review:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 2
+
+      - name: Claude Security Review
+        uses: anthropics/claude-code-security-review@main
+        with:
+          comment-pr: true
+          claude-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          upload-results: true
+          claude-model: claude-opus-4-1-20250805
+          claudecode-timeout: 20
+
+  claude-code-review:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      pull-requests: write
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Claude Code Review
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: |
+            Please review this pull request and provide:
+            1. Code quality assessment (readability, maintainability, best practices)
+            2. Potential bugs or logic errors
+            3. Performance considerations
+            4. Suggestions for improvements
+
+            Focus on:
+            - Rust code quality and idiomatic patterns
+            - TypeScript/React best practices
+            - SQL query efficiency
+            - Error handling completeness
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
