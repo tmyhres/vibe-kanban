@@ -56,6 +56,12 @@ We would prefer that ideas and changes are first raised with the core team via [
 
 ## Development
 
+### Automated Code Review
+
+This repository uses Claude Code for automated code reviews on pull requests:
+- **Security Review**: Scans for security vulnerabilities
+- **Code Quality Review**: Analyzes code quality, best practices, and potential issues
+
 ### Prerequisites
 
 - [Rust](https://rustup.rs/) (latest stable)
